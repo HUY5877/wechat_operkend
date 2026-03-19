@@ -20,35 +20,12 @@ DB_ORM_CONFIG = {
                 'user': os.getenv('BASE_USER', 'root'),
                 'password': os.getenv('BASE_PASSWORD', 'sust123456'),
                 'port': int(os.getenv('BASE_PORT', 3306)),
-                'database': os.getenv('BASE_DB', 'base'),
+                'database': os.getenv('BASE_DB', 'Wechat_HarmonyOS_main'),
             }
         },
-        # "db2": {
-        #     'engine': 'tortoise.backends.mysql',
-        #     "credentials": {
-        #         'host': os.getenv('DB2_HOST', '127.0.0.1'),
-        #         'user': os.getenv('DB2_USER', 'root'),
-        #         'password': os.getenv('DB2_PASSWORD', '123456'),
-        #         'port': int(os.getenv('DB2_PORT', 3306)),
-        #         'database': os.getenv('DB2_DB', 'db2'),
-        #     }
-        # },
-        # "db3": {
-        #     'engine': 'tortoise.backends.mysql',
-        #     "credentials": {
-        #         'host': os.getenv('DB3_HOST', '127.0.0.1'),
-        #         'user': os.getenv('DB3_USER', 'root'),
-        #         'password': os.getenv('DB3_PASSWORD', '123456'),
-        #         'port': int(os.getenv('DB3_PORT', 3306)),
-        #         'database': os.getenv('DB3_DB', 'db3'),
-        #     }
-        # },
-
     },
     "apps": {
         "base": {"models": ["models.base"], "default_connection": "base"},
-        # "db2": {"models": ["models.db2"], "default_connection": "db2"},
-        # "db3": {"models": ["models.db3"], "default_connection": "db3"}
     },
     'use_tz': False,
     'timezone': 'Asia/Shanghai'
