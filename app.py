@@ -16,11 +16,15 @@ from fastapi.templating import Jinja2Templates
 from tortoise.exceptions import OperationalError, DoesNotExist, IntegrityError, ValidationError
 from fastapi.openapi.docs import (get_redoc_html, get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html)
 from fastapi.openapi.utils import get_openapi
+from database.mysql import register_mysql
 
 application = FastAPI(
     debug=settings.APP_DEBUG,
     swagger_ui_oauth2_redirect_url=settings.SWAGGER_UI_OAUTH2_REDIRECT_URL,
 )
+
+# 注册数据库 (会自动管理上下文)
+register_mysql(application)
 
 
 

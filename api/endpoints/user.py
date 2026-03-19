@@ -1,53 +1,72 @@
 # -*- coding:utf-8 -*-
-from fastapi import APIRouter, Depends, Request
-from models.base import User
-from schemas import user
+from database.user import create_user, get_user_by_account, get_user_by_id, update_user
 from core.Response import success, fail
-from core.Auth import check_permissions, create_access_token
+from core.Auth import create_access_token
 from config import settings
 
-router = APIRouter()
-
-@router.post("/register", summary="User Registration")
-async def register(post: user.CreateUser):
-    get_user = await User.get_or_none(account=post.account)
-    if get_user:
-        return fail(msg=f"Account {post.account} already exists!")
-    create_user = await User.create(**post.model_dump())
-    if not create_user:
-        return fail(msg="Registration failed")
-    return success(msg="Registration successful")
-
-@router.post("/login", summary="User Login")
-async def login(post: user.UserLogin):
-    get_user = await User.get_or_none(account=post.account)
-    if not get_user or get_user.password != post.password:
-        return fail(msg="Incorrect account or password")
-    if get_user.status != 1:
-        return fail(msg="Account inactive")
+async def register(data: dict):
+    account = data.get("account")
+    password = data.get("password")
+    name = data.get("name")
+    if not account or not password:
+        return {"result": "fail", "user_id": "", "text": "账号密码不能为空"}
     
-    jwt_data = {"user_id": get_user.id}
-    jwt_token = create_access_token(data=jwt_data)
-    data = {"token": jwt_token, "expires_in": settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60}
-    return success(msg="Login successful", data=data)
+    if await get_user_by_account(account):
+        return {"result": "fail", "user_id": "", "text": "账号重复"}
+    
+    user = await create_user(account=account, password=password, name=name)
+    return {"result": "success", "user_id": str(user.id), "text": ""}
 
-@router.get("/info", summary="Get User Info", dependencies=[Depends(check_permissions)])
-async def user_info(req: Request):
-    user_data = await User.get_or_none(id=req.state.user_id)
-    if not user_data:
-        return fail(msg="User not found")
-    return success(msg="User Info", data=user.UserResponse.model_validate(user_data).model_dump())
+async def login(data: dict):
+    account = data.get("account")
+    password = data.get("password")
+    user = await get_user_by_account(account)
+    if not user or user.password != password:
+        return {"result": "fail", "user_id": "", "text": "账号或密码错误"}
+    
+    jwt_data = {"user_id": user.id}
+    token = create_access_token(data=jwt_data)
+    return {
+        "result": "success", 
+        "user_id": str(user.id), 
+        "text": "",
+        "token": token # Added for actual usability
+    }
 
-@router.put("/update", summary="Update User Info", dependencies=[Depends(check_permissions)])
-async def update_user(req: Request, post: user.UpdateUser):
-    if post.id != req.state.user_id:
-        return fail(msg="Cannot update other users")
-    data = post.model_dump(exclude_unset=True)
-    data.pop("id", None)
-    await User.filter(id=req.state.user_id).update(**data)
-    return success(msg="Update successful")
+async def query_friend_homepage(data: dict):
+    user_id = data.get("user_id")
+    user = await get_user_by_id(user_id)
+    if not user: return {}
+    return {
+        "friend_id": str(user.id),
+        "account": user.account,
+        "name": user.name,
+        "status": str(user.status),
+        "profile_picture_id": str(user.profile_picture_id)
+    }
 
-@router.delete("/delete", summary="Delete User", dependencies=[Depends(check_permissions)])
-async def delete_user(req: Request):
-    await User.filter(id=req.state.user_id).delete()
-    return success(msg="Delete successful")
+async def query_personal_homepage(data: dict):
+    user_id = data.get("user_id")
+    user = await get_user_by_id(user_id)
+    if not user: return {}
+    return {
+        "user_id": str(user.id),
+        "account": user.account,
+        "name": user.name,
+        "status": str(user.status),
+        "profile_picture_id": str(user.profile_picture_id)
+    }
+
+async def recompose_personal_homepage(data: dict):
+    user_id = data.get("user_id")
+    update_data = {
+        "name": data.get("name"),
+        "status": data.get("status"),
+        "profile_picture_id": data.get("profile_picture_id")
+    }
+    # Remove None values
+    update_data = {k: v for k, v in update_data.items() if v is not None}
+    success_update = await update_user(user_id, **update_data)
+    if success_update:
+        return {"result": "success", "user_id": str(user_id), "text": ""}
+    return {"result": "fail", "user_id": str(user_id), "text": "ID不存在或其他错误"}

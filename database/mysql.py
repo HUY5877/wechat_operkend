@@ -32,8 +32,11 @@ DB_ORM_CONFIG = {
 }
 
 
-async def register_mysql(app: FastAPI):
-    # 注册数据库
+def register_mysql(app: FastAPI):
+    """
+    使用 Tortoise-ORM 官方推荐方式注册到 FastAPI
+    这会自动挂载启动和停止事件
+    """
     register_tortoise(
         app,
         config=DB_ORM_CONFIG,

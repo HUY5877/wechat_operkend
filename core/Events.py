@@ -7,7 +7,6 @@
 
 from typing import Callable
 from fastapi import FastAPI
-from database.mysql import register_mysql
 
 
 def startup(app: FastAPI) -> Callable:
@@ -17,12 +16,9 @@ def startup(app: FastAPI) -> Callable:
     :return: start_app
     """
     async def app_start() -> None:
-        # APP启动完成后触发
+        # APP启动完成后触发 (目前仅用于打印)
         print("fastapi已启动")
-        # 注册数据库
-        await register_mysql(app)
 
-        pass
     return app_start
 
 
@@ -33,7 +29,7 @@ def stopping(app: FastAPI) -> Callable:
     :return: stop_app
     """
     async def stop_app() -> None:
-        # APP停止时触发
+        # APP停止时触发 (目前仅用于打印)
         print("fastapi已停止")
 
     return stop_app
