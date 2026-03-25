@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 from database.moments import publish_moment, delete_moment, get_timeline
+from database.contacts import get_contacts
 
 async def add_moments(data: dict):
     user_id = data.get("user_id")
@@ -8,8 +9,13 @@ async def add_moments(data: dict):
     return {"result": "success", "user_id": str(user_id), "text": ""}
 
 async def query_moments(data: dict):
+    """朋友圈：返回自己和所有好友的朋友圈"""
     user_id = data.get("user_id")
-    mlist = await get_timeline(user_id)
+    # 获取好友 ID 列表
+    clist = await get_contacts(user_id)
+    friend_ids = [c.friend_id for c in clist]
+
+    mlist = await get_timeline(user_id, friend_ids)
     result = []
     for m in mlist:
         result.append({
