@@ -1,4 +1,6 @@
 # -*- coding:utf-8 -*-
+import asyncio
+import requests
 from database.messages import send_message, get_messages, delete_message
 from models.base import Message, User
 from tortoise.expressions import Q
@@ -10,6 +12,40 @@ async def add_message(data: dict):
     if not content:
         return {"result": "fail", "user_id": str(user_id), "text": "无文本"}
     await send_message(user_id, friend_id, content)
+    quit()
+    if str(friend_id) == "0":
+        # 获取与该朋友的所有消息
+        history = await get_messages(user_id, friend_id)
+        # 历史记录是按时间倒序排列的，需要反转为正序供 LLM 使用
+        history.reverse()
+        
+        messages_payload = []
+        for msg in history:
+            # 如果是当前用户发的消息，角色为 user；否则为 assistant
+            role = "user" if str(msg.user_id) == str(friend_id) else "assistant"
+            messages_payload.append({"role": role, "content": msg.content})
+            
+        async def fetch_llm():
+            import os
+            from openai import OpenAI
+
+            client = OpenAI(
+                # api_key=os.environ.get('DEEPSEEK_API_KEY'),
+                api_key="sk-ca07c1345b034bd59c4b7a3408952d7e",
+                base_url="https://api.deepseek.com")
+
+            response = client.chat.completions.create(
+                model="deepseek-chat",
+                messages=messages_payload,
+                stream=False
+            )
+
+            print(response.choices[0].message.content, 222222)
+        
+            # 将 LLM 的回复写入数据库，作为 friend_id 发送给 user_id
+            await send_message(friend_id, user_id, response.choices[0].message.content)
+        await fetch_llm()
+
     return {"result": "success", "user_id": str(user_id), "text": ""}
 
 async def query_message_list(data: dict):
