@@ -10,8 +10,8 @@ class User(Model):
     account = fields.CharField(max_length=50, unique=True, null=False)
     password = fields.CharField(max_length=255, null=False)
     name = fields.CharField(max_length=50, null=True)
-    status = fields.IntField(default=1) # TINYINT doesn't exist directly, IntField is fine
-    profile_picture_id = fields.BigIntField(null=True)
+    status = fields.CharField(max_length=100, default='')
+    profile_picture_id = fields.BigIntField(null=True, default=0)
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
@@ -40,7 +40,8 @@ class Message(Model):
     friend_id = fields.BigIntField(null=False)
     content = fields.TextField()
     created_at = fields.DatetimeField(auto_now_add=True, index=True)
-    is_deleted = fields.IntField(default=0)
+    is_deleted_sender = fields.IntField(default=0)    # 发送方逻辑删除（只对自己隐藏）
+    is_deleted_receiver = fields.IntField(default=0)  # 接收方逻辑删除（只对自己隐藏）
 
     class Meta:
         table = "message"

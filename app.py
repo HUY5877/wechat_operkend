@@ -11,26 +11,31 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from config import settings
 from fastapi.staticfiles import StaticFiles
-from core import Exception, Events, Router, Middleware
+from core import Exception, Router, Middleware
 from fastapi.templating import Jinja2Templates
 from tortoise.exceptions import OperationalError, DoesNotExist, IntegrityError, ValidationError
 from fastapi.openapi.docs import (get_redoc_html, get_swagger_ui_html, get_swagger_ui_oauth2_redirect_html)
 from fastapi.openapi.utils import get_openapi
 from database.mysql import register_mysql
+from contextlib import asynccontextmanager
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # 启动
+    print("fastapi已启动")
+    yield
+    # 停止
+    print("fastapi已停止")
 
 application = FastAPI(
     debug=settings.APP_DEBUG,
     swagger_ui_oauth2_redirect_url=settings.SWAGGER_UI_OAUTH2_REDIRECT_URL,
+    lifespan=lifespan,
 )
 
 # 注册数据库 (会自动管理上下文)
 register_mysql(application)
-
-
-
-# 事件监听
-application.add_event_handler("startup", Events.startup(application))
-application.add_event_handler("shutdown", Events.stopping(application))
 
 # 异常错误处理
 application.add_exception_handler(HTTPException, Exception.http_error_handler)

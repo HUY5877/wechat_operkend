@@ -18,12 +18,16 @@ async def unified_service(request: Request):
     # 分发逻辑
     if table_name == "user":
         if operation == "register":
+            # 注册
             return await user.register(data)
         elif operation == "login":
+            # 登录
             return await user.login(data)
         elif operation == "query_friend_homepage":
+
             return await user.query_friend_homepage(data)
         elif operation == "query_personal_homepage":
+            # 个人主页
             return await user.query_personal_homepage(data)
         elif operation == "recompose_personal_homepage":
             return await user.recompose_personal_homepage(data)
@@ -44,6 +48,7 @@ async def unified_service(request: Request):
         if operation == "query_contacts":
             return await contacts.query_contacts(data)
         elif operation == "add_friend":
+            # 添加好友
             return await contacts.add_friend(data)
         elif operation == "query_contacts_":
             return await contacts.query_contacts_search(data)

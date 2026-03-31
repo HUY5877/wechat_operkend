@@ -16,7 +16,7 @@ DB_ORM_CONFIG = {
         "base": {
             'engine': 'tortoise.backends.mysql',
             "credentials": {
-                'host': os.getenv('BASE_HOST', '47.110.126.251'),
+                'host': os.getenv('BASE_HOST', '146.56.215.115'),
                 'user': os.getenv('BASE_USER', 'root'),
                 'password': os.getenv('BASE_PASSWORD', 'sust123456'),
                 'port': int(os.getenv('BASE_PORT', 3306)),

@@ -3,9 +3,15 @@
 from models.base import User
 from typing import Optional, List
 
-async def create_user(account: str, password: str, name: Optional[str] = None) -> User:
-    """创建用户"""
-    return await User.create(account=account, password=password, name=name)
+async def create_user(account: str, password: str, name: str, status: str = '', profile_picture_id: int = 0) -> User:
+    """创建用户，account/password/name 为必需，其余默认"""
+    return await User.create(
+        account=account,
+        password=password,
+        name=name,
+        status=status,
+        profile_picture_id=profile_picture_id
+    )
 
 async def get_user_by_account(account: str) -> Optional[User]:
     """通过账号获取用户"""
